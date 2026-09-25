@@ -1,0 +1,14 @@
+<svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="100" height="100" rx="20" fill="#181E24"/>
+  <!-- FINEX Arrow Emblem -->
+  <!-- Top bar and forward arrow in official FINEX Red #E52D27 -->
+  <path
+    d="M16 12H88L72 32H38V44H58V36L86 54L58 72V64H48L16 38V12Z"
+    fill="#E52D27"
+  />
+  <!-- Bottom Stem with parallel 45-degree angle slice -->
+  <path
+    d="M16 52L40 70V88H16V52Z"
+    fill="#E52D27"
+  />
+</svg>
