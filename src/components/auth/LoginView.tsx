@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../lib/auth';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import { Logo } from '../common/Logo';
 import { Shield, Lock, Mail, ArrowRight, AlertCircle, Database } from 'lucide-react';
-import { getSupabaseCredentials } from '../../lib/supabase';
 
 export const LoginView: React.FC = () => {
   const { login, error } = useAuth();
@@ -10,8 +10,6 @@ export const LoginView: React.FC = () => {
   const [password, setPassword] = useState('admin123');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [localError, setLocalError] = useState<string | null>(null);
-
-  const { isConfigured } = getSupabaseCredentials();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,9 +126,11 @@ export const LoginView: React.FC = () => {
         {/* Database backend badge */}
         <div className="mt-4 text-center">
           <div className="inline-flex items-center gap-2 text-[11px] font-mono text-zinc-400">
-            <Database className="w-3 h-3 text-zinc-400" />
+            <Database className={`w-3 h-3 ${isSupabaseConfigured() ? 'text-emerald-400' : 'text-zinc-400'}`} />
             <span>
-              {isConfigured ? 'Connected to Supabase Live Instance' : 'Ready for Supabase PostgreSQL Link'}
+              {isSupabaseConfigured()
+                ? 'Connected to Supabase PostgreSQL Live Database'
+                : 'Ready for Supabase PostgreSQL Cloud Sync'}
             </span>
           </div>
         </div>

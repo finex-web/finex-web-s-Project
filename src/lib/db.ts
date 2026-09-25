@@ -48,9 +48,9 @@ import {
   INITIAL_ACTIVITY_LOGS,
 } from './initialData';
 
-import { getSupabase } from './supabase';
+import { getSupabase, isSupabaseConfigured } from './supabase';
 
-const STORAGE_KEY = 'finex_web_crm_db_v1';
+const STORAGE_KEY = 'finex_web_crm_db_v2';
 
 interface DBState {
   settings: AgencySettings;
@@ -79,9 +79,23 @@ function loadState(): DBState {
     return getInitialState();
   }
   try {
+    // Purge old demo storage if present
+    localStorage.removeItem('finex_web_crm_db_v1');
+
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
+      // Verify if state has old demo data (e.g., Royal Treat or Vikram Mehta)
+      const hasOldDemoData = 
+        parsed.clients?.some((c: any) => c.business_name?.includes('Royal Treat') || c.id === 'cl-01') ||
+        parsed.leads?.some((l: any) => l.business_name?.includes('Royal Treat') || l.id === 'ld-01');
+
+      if (hasOldDemoData) {
+        // Purge old demo records
+        localStorage.removeItem(STORAGE_KEY);
+        return getInitialState();
+      }
+
       return {
         ...getInitialState(),
         ...parsed,
@@ -120,9 +134,13 @@ function getInitialState(): DBState {
 class DatabaseManager {
   private state: DBState = loadState();
   private listeners: Set<() => void> = new Set();
+  private isSyncingWithSupabase = false;
 
   constructor() {
     this.saveState();
+    if (typeof window !== 'undefined' && isSupabaseConfigured()) {
+      setTimeout(() => this.syncFromSupabase(), 300);
+    }
   }
 
   private saveState() {
@@ -1513,6 +1531,197 @@ class DatabaseManager {
   public resetToInitialData() {
     this.state = getInitialState();
     this.saveState();
+  }
+
+  /**
+   * Purge all demo records completely and reset to a clean slate
+   */
+  public purgeAllDemoData() {
+    this.state = getInitialState();
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('finex_web_crm_db_v1');
+      localStorage.removeItem(STORAGE_KEY);
+    }
+    this.saveState();
+  }
+
+  /**
+   * Pulls all live data from Supabase PostgreSQL tables into the CRM
+   */
+  public async syncFromSupabase(): Promise<{ success: boolean; message: string; counts?: Record<string, number> }> {
+    const sb = getSupabase();
+    if (!sb) {
+      return { success: false, message: 'Supabase is not configured or credentials are invalid.' };
+    }
+
+    try {
+      this.isSyncingWithSupabase = true;
+
+      // Query core tables in parallel
+      const [
+        clientsRes,
+        leadsRes,
+        projectsRes,
+        paymentsRes,
+        tasksRes,
+        quotesRes,
+        teamRes,
+        maintenanceRes,
+        hostingRes,
+        domainsRes,
+        followupsRes,
+        callsRes,
+        requirementsRes,
+        salaryRecsRes,
+        salaryPmtsRes,
+        expensesRes,
+        settingsRes,
+      ] = await Promise.all([
+        sb.from('clients').select('*'),
+        sb.from('leads').select('*'),
+        sb.from('projects').select('*'),
+        sb.from('payments').select('*'),
+        sb.from('tasks').select('*'),
+        sb.from('quotes').select('*'),
+        sb.from('team_members').select('*'),
+        sb.from('maintenance').select('*'),
+        sb.from('hosting').select('*'),
+        sb.from('domains').select('*'),
+        sb.from('followups').select('*'),
+        sb.from('calls').select('*'),
+        sb.from('requirements').select('*'),
+        sb.from('salary_records').select('*'),
+        sb.from('salary_payments').select('*'),
+        sb.from('expenses').select('*'),
+        sb.from('settings').select('*').limit(1),
+      ]);
+
+      const counts: Record<string, number> = {};
+
+      if (clientsRes.data) {
+        this.state.clients = clientsRes.data;
+        counts.clients = clientsRes.data.length;
+      }
+      if (leadsRes.data) {
+        this.state.leads = leadsRes.data;
+        counts.leads = leadsRes.data.length;
+      }
+      if (projectsRes.data) {
+        this.state.projects = projectsRes.data;
+        counts.projects = projectsRes.data.length;
+      }
+      if (paymentsRes.data) {
+        this.state.payments = paymentsRes.data;
+        counts.payments = paymentsRes.data.length;
+      }
+      if (tasksRes.data) {
+        this.state.tasks = tasksRes.data;
+        counts.tasks = tasksRes.data.length;
+      }
+      if (quotesRes.data) {
+        this.state.quotes = quotesRes.data;
+        counts.quotes = quotesRes.data.length;
+      }
+      if (teamRes.data && teamRes.data.length > 0) {
+        this.state.teamMembers = teamRes.data;
+        counts.team = teamRes.data.length;
+      }
+      if (maintenanceRes.data) {
+        this.state.maintenance = maintenanceRes.data;
+        counts.maintenance = maintenanceRes.data.length;
+      }
+      if (hostingRes.data) {
+        this.state.hosting = hostingRes.data;
+        counts.hosting = hostingRes.data.length;
+      }
+      if (domainsRes.data) {
+        this.state.domains = domainsRes.data;
+        counts.domains = domainsRes.data.length;
+      }
+      if (followupsRes.data) {
+        this.state.followups = followupsRes.data;
+        counts.followups = followupsRes.data.length;
+      }
+      if (callsRes.data) {
+        this.state.calls = callsRes.data;
+        counts.calls = callsRes.data.length;
+      }
+      if (requirementsRes.data) {
+        this.state.requirements = requirementsRes.data;
+        counts.requirements = requirementsRes.data.length;
+      }
+      if (salaryRecsRes.data) {
+        this.state.salaryRecords = salaryRecsRes.data;
+        counts.salaryRecords = salaryRecsRes.data.length;
+      }
+      if (salaryPmtsRes.data) {
+        this.state.salaryPayments = salaryPmtsRes.data;
+        counts.salaryPayments = salaryPmtsRes.data.length;
+      }
+      if (expensesRes.data) {
+        this.state.expenses = expensesRes.data;
+        counts.expenses = expensesRes.data.length;
+      }
+      if (settingsRes.data && settingsRes.data[0]) {
+        this.state.settings = { ...this.state.settings, ...settingsRes.data[0] };
+      }
+
+      this.saveState();
+      return {
+        success: true,
+        message: 'Successfully pulled live data from Supabase PostgreSQL tables!',
+        counts,
+      };
+    } catch (err: any) {
+      console.error('Supabase sync error:', err);
+      return { success: false, message: err?.message || 'Failed to sync with Supabase tables.' };
+    } finally {
+      this.isSyncingWithSupabase = false;
+    }
+  }
+
+  /**
+   * Pushes all current CRM records into Supabase PostgreSQL tables
+   */
+  public async pushAllToSupabase(): Promise<{ success: boolean; message: string }> {
+    const sb = getSupabase();
+    if (!sb) {
+      return { success: false, message: 'Supabase is not configured or credentials are invalid.' };
+    }
+
+    try {
+      const inserts = [];
+
+      if (this.state.clients.length > 0) {
+        inserts.push(sb.from('clients').upsert(this.state.clients, { onConflict: 'id' }));
+      }
+      if (this.state.leads.length > 0) {
+        inserts.push(sb.from('leads').upsert(this.state.leads, { onConflict: 'id' }));
+      }
+      if (this.state.projects.length > 0) {
+        inserts.push(sb.from('projects').upsert(this.state.projects, { onConflict: 'id' }));
+      }
+      if (this.state.payments.length > 0) {
+        inserts.push(sb.from('payments').upsert(this.state.payments, { onConflict: 'id' }));
+      }
+      if (this.state.tasks.length > 0) {
+        inserts.push(sb.from('tasks').upsert(this.state.tasks, { onConflict: 'id' }));
+      }
+      if (this.state.quotes.length > 0) {
+        inserts.push(sb.from('quotes').upsert(this.state.quotes, { onConflict: 'id' }));
+      }
+      if (this.state.teamMembers.length > 0) {
+        inserts.push(sb.from('team_members').upsert(this.state.teamMembers, { onConflict: 'id' }));
+      }
+      if (this.state.expenses.length > 0) {
+        inserts.push(sb.from('expenses').upsert(this.state.expenses, { onConflict: 'id' }));
+      }
+
+      await Promise.all(inserts);
+      return { success: true, message: 'All current CRM records have been pushed to Supabase tables.' };
+    } catch (err: any) {
+      return { success: false, message: err?.message || 'Error pushing data to Supabase.' };
+    }
   }
 }
 

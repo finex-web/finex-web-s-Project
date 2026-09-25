@@ -5,7 +5,6 @@ import { Sidebar } from './components/common/Sidebar';
 import { Header } from './components/common/Header';
 import { GlobalSearchModal } from './components/common/GlobalSearchModal';
 import { NotificationDrawer } from './components/common/NotificationDrawer';
-import { GitHubModal } from './components/common/GitHubModal';
 import { LoginView } from './components/auth/LoginView';
 
 // Core Business Views
@@ -33,7 +32,6 @@ const MainLayout: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
-  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState(false);
 
   // Deep drilldown entity selection states
   const [selectedClientId, setSelectedClientId] = useState<string | undefined>(undefined);
@@ -103,7 +101,6 @@ const MainLayout: React.FC = () => {
           onOpenSearch={() => setIsSearchOpen(true)}
           onOpenNotifications={() => setIsNotificationsOpen(true)}
           onNavigateToSettings={() => handleNavigate('settings')}
-          onOpenGitHub={() => setIsGitHubModalOpen(true)}
         />
 
         {/* Scrollable View Container */}
@@ -183,11 +180,6 @@ const MainLayout: React.FC = () => {
         isOpen={isNotificationsOpen}
         onClose={() => setIsNotificationsOpen(false)}
         onNavigate={handleNavigate}
-      />
-
-      <GitHubModal
-        isOpen={isGitHubModalOpen}
-        onClose={() => setIsGitHubModalOpen(false)}
       />
     </div>
   );

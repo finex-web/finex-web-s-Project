@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { db } from '../../lib/db';
-import { Logo } from '../common/Logo';
+import { SupabaseManager } from './SupabaseManager';
 import {
   Building2,
   CreditCard,
@@ -8,33 +8,31 @@ import {
   Database,
   Save,
   CheckCircle2,
-  RefreshCw,
   AlertTriangle,
-  Lock,
-  Server,
-  Layers,
   Download,
   Upload,
-  GitBranch,
-  Github,
   Copy,
   Check,
   FileJson,
-  Terminal,
   ExternalLink,
   ShieldCheck,
-  FileText,
+  Zap,
+  Globe,
+  Rocket,
+  HardDrive,
   Users,
   Briefcase,
   DollarSign,
+  FileText,
+  Clock,
+  Sparkles,
+  Cloud,
 } from 'lucide-react';
-import { isSupabaseConfigured, getSupabaseCredentials } from '../../lib/supabase';
-import { SupabaseManager } from './SupabaseManager';
 
 export const SettingsView: React.FC = () => {
   const settings = db.getSettings();
 
-  const [activeSection, setActiveSection] = useState<'data' | 'supabase' | 'general'>('data');
+  const [activeSection, setActiveSection] = useState<'supabase' | 'backup' | 'deployment' | 'general'>('supabase');
 
   const [agencyName, setAgencyName] = useState(settings.agency_name || 'FINEX WEB');
   const [tagline, setTagline] = useState(settings.tagline || 'Private Agency Operating System');
@@ -73,12 +71,6 @@ export const SettingsView: React.FC = () => {
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [resetDone, setResetDone] = useState(false);
 
-  // Data & GitHub publishing states
-  const [githubUser, setGithubUser] = useState('YOUR_USERNAME');
-  const [githubRepo, setGithubRepo] = useState('YOUR_REPO_NAME');
-  const [gitTab, setGitTab] = useState<'initial' | 'push_changes'>('initial');
-  const [commitMessage, setCommitMessage] = useState('feat: complete FINEX WEB agency operating system');
-  const [changeMessage, setChangeMessage] = useState('update: push latest agency updates');
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [backupSuccess, setBackupSuccess] = useState<string | null>(null);
   const [backupError, setBackupError] = useState<string | null>(null);
@@ -132,10 +124,10 @@ export const SettingsView: React.FC = () => {
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      setBackupSuccess('Full agency database exported and downloaded as JSON.');
+      setBackupSuccess('Complete agency database exported and downloaded as JSON file.');
       setTimeout(() => setBackupSuccess(null), 4000);
     } catch (err: any) {
-      setBackupError(err?.message || 'Failed to export backup.');
+      setBackupError(err?.message || 'Failed to export database backup.');
       setTimeout(() => setBackupError(null), 4000);
     }
   };
@@ -165,9 +157,6 @@ export const SettingsView: React.FC = () => {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const hasSupabase = isSupabaseConfigured();
-  const credentials = getSupabaseCredentials();
-
   // Database counts for overview
   const clientsCount = db.getClients().length;
   const leadsCount = db.getLeads().length;
@@ -175,38 +164,8 @@ export const SettingsView: React.FC = () => {
   const paymentsCount = db.getPayments().length;
   const teamCount = db.getTeamMembers().length;
   const quotesCount = db.getQuotes().length;
-
-  // Exact initial code requested by user
-  const gitCommandsInitial = `# 1. Initialize git
-git init
-
-# 2. Stage all project files (.gitignore protects secrets automatically)
-git add .
-
-# 3. Create your first commit
-git commit -m "${commitMessage || 'feat: complete FINEX WEB agency operating system'}"
-
-# 4. Set main as the default branch
-git branch -M main
-
-# 5. Link to your GitHub repository (replace with your GitHub username and repo)
-git remote add origin https://github.com/${githubUser || 'YOUR_USERNAME'}/${githubRepo || 'YOUR_REPO_NAME'}.git
-
-# 6. Push to GitHub
-git push -u origin main`;
-
-  // Code to push subsequent changes
-  const gitCommandsChanges = `# 1. Check status of modified files
-git status
-
-# 2. Stage all changes
-git add .
-
-# 3. Commit your changes
-git commit -m "${changeMessage || 'update: push latest agency updates'}"
-
-# 4. Push updates to GitHub
-git push origin main`;
+  const tasksCount = db.getTasks().length;
+  const expensesCount = db.getExpenses().length;
 
   return (
     <div className="space-y-6 max-w-5xl">
@@ -214,28 +173,15 @@ git push origin main`;
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
-            <span>Agency Configuration & Settings</span>
+            <span>Agency Operating System & Settings</span>
           </h2>
           <p className="text-xs text-zinc-400">
-            Manage data persistence, full database backup/export, GitHub publishing, and agency identity.
+            Self-contained enterprise database, zero-config live deployment options, and agency identity.
           </p>
         </div>
 
         {/* Section Navigation Switcher */}
         <div className="flex items-center gap-1 bg-[#121316] p-1 rounded-lg border border-white/10">
-          <button
-            type="button"
-            onClick={() => setActiveSection('data')}
-            className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-              activeSection === 'data'
-                ? 'bg-[#E52D27] text-white shadow'
-                : 'text-zinc-400 hover:text-white'
-            }`}
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span>Data Access & GitHub</span>
-          </button>
-
           <button
             type="button"
             onClick={() => setActiveSection('supabase')}
@@ -246,10 +192,33 @@ git push origin main`;
             }`}
           >
             <Database className="w-3.5 h-3.5" />
-            <span>Supabase Cloud</span>
-            {hasSupabase && (
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5"></span>
-            )}
+            <span>Supabase Cloud Database</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSection('backup')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+              activeSection === 'backup'
+                ? 'bg-[#E52D27] text-white shadow'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Download className="w-3.5 h-3.5" />
+            <span>Backup &amp; Export (.json)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveSection('deployment')}
+            className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 transition-colors ${
+              activeSection === 'deployment'
+                ? 'bg-[#E52D27] text-white shadow'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Rocket className="w-3.5 h-3.5" />
+            <span>Live Hosting</span>
           </button>
 
           <button
@@ -262,13 +231,20 @@ git push origin main`;
             }`}
           >
             <Building2 className="w-3.5 h-3.5" />
-            <span>Agency & Bank Details</span>
+            <span>Agency &amp; Bank Details</span>
           </button>
         </div>
       </div>
 
-      {/* SECTION: DATA ACCESS & GITHUB PUBLISHING */}
-      {activeSection === 'data' && (
+      {/* ======================================================== */}
+      {/* SECTION 1: SUPABASE POSTGRESQL CLOUD DATABASE            */}
+      {/* ======================================================== */}
+      {activeSection === 'supabase' && <SupabaseManager />}
+
+      {/* ======================================================== */}
+      {/* SECTION 2: LOCAL BACKUP ENGINE & PORTABLE JSON EXPORT    */}
+      {/* ======================================================== */}
+      {activeSection === 'backup' && (
         <div className="space-y-6">
           {/* Notifications */}
           {backupSuccess && (
@@ -292,368 +268,331 @@ git push origin main`;
             </div>
           )}
 
-          {/* 1. HOW TO ACCESS YOUR DATA */}
-          <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-5">
+          {/* Engine Status Banner */}
+          <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
               <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-[#E52D27]/10 border border-[#E52D27]/30 flex items-center justify-center text-[#E52D27]">
-                  <Database className="w-4 h-4" />
+                <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                  <ShieldCheck className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                    How to Access Your FINEX WEB Data
-                  </h3>
-                  <p className="text-[11px] text-zinc-400">
-                    Your agency records are dual-managed: local persistent storage + optional Supabase cloud PostgreSQL.
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-sm font-bold text-white">Encrypted Local Database Engine</h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-950 border border-emerald-800 text-emerald-300">
+                      ACTIVE & SECURE
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400">
+                    Zero external server dependency, zero cloud fees, zero latency, and 100% data ownership.
                   </p>
                 </div>
               </div>
 
-              {/* Status Badge */}
-              <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded font-mono text-[11px] font-semibold border ${
-                hasSupabase 
-                  ? 'bg-emerald-950/80 border-emerald-700/60 text-emerald-400' 
-                  : 'bg-zinc-800/80 border-zinc-700/60 text-zinc-300'
-              }`}>
-                <span className={`w-2 h-2 rounded-full ${hasSupabase ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-500'}`}></span>
-                {hasSupabase ? 'SUPABASE CLOUD SYNCED' : 'BROWSER OFFLINE CACHE'}
-              </span>
-            </div>
-
-            {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
-              <div className="p-2.5 bg-[#18191c] border border-white/[0.06] rounded text-center">
-                <div className="text-xs text-zinc-400 flex items-center justify-center gap-1">
-                  <Users className="w-3 h-3 text-sky-400" />
-                  <span>Clients</span>
-                </div>
-                <div className="text-base font-bold font-mono text-white mt-0.5">{clientsCount}</div>
-              </div>
-              <div className="p-2.5 bg-[#18191c] border border-white/[0.06] rounded text-center">
-                <div className="text-xs text-zinc-400 flex items-center justify-center gap-1">
-                  <FileText className="w-3 h-3 text-amber-400" />
-                  <span>Leads</span>
-                </div>
-                <div className="text-base font-bold font-mono text-white mt-0.5">{leadsCount}</div>
-              </div>
-              <div className="p-2.5 bg-[#18191c] border border-white/[0.06] rounded text-center">
-                <div className="text-xs text-zinc-400 flex items-center justify-center gap-1">
-                  <Briefcase className="w-3 h-3 text-emerald-400" />
-                  <span>Projects</span>
-                </div>
-                <div className="text-base font-bold font-mono text-white mt-0.5">{projectsCount}</div>
-              </div>
-              <div className="p-2.5 bg-[#18191c] border border-white/[0.06] rounded text-center">
-                <div className="text-xs text-zinc-400 flex items-center justify-center gap-1">
-                  <DollarSign className="w-3 h-3 text-indigo-400" />
-                  <span>Invoices</span>
-                </div>
-                <div className="text-base font-bold font-mono text-white mt-0.5">{paymentsCount}</div>
-              </div>
-              <div className="p-2.5 bg-[#18191c] border border-white/[0.06] rounded text-center">
-                <div className="text-xs text-zinc-400 flex items-center justify-center gap-1">
-                  <Layers className="w-3 h-3 text-pink-400" />
-                  <span>Quotes</span>
-                </div>
-                <div className="text-base font-bold font-mono text-white mt-0.5">{quotesCount}</div>
-              </div>
-              <div className="p-2.5 bg-[#18191c] border border-white/[0.06] rounded text-center">
-                <div className="text-xs text-zinc-400 flex items-center justify-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-purple-400" />
-                  <span>Team</span>
-                </div>
-                <div className="text-base font-bold font-mono text-white mt-0.5">{teamCount}</div>
-              </div>
-            </div>
-
-            {/* 3 Channels of Data Access */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-1">
-              <div className="p-3.5 bg-[#18191c] border border-white/[0.06] rounded-lg space-y-2">
-                <div className="flex items-center gap-2 text-white font-semibold text-xs">
-                  <FileJson className="w-4 h-4 text-emerald-400" />
-                  <span>1. Full JSON Backup</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Export all 22 database tables into a portable JSON file. Download and inspect anytime, or use it to restore on any computer.
-                </p>
+              <div className="flex items-center gap-2">
                 <button
                   type="button"
                   onClick={handleExportBackup}
-                  className="w-full h-8 px-3 rounded bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors shadow"
+                  className="px-3 py-1.5 rounded bg-[#E52D27] hover:bg-[#c92520] text-white font-semibold text-xs flex items-center gap-1.5 shadow transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span>Download Backup JSON</span>
+                  <span>Download Backup (.json)</span>
                 </button>
-              </div>
-
-              <div className="p-3.5 bg-[#18191c] border border-white/[0.06] rounded-lg space-y-2">
-                <div className="flex items-center gap-2 text-white font-semibold text-xs">
-                  <Database className="w-4 h-4 text-sky-400" />
-                  <span>2. Cloud Supabase Tables</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  When connected, your data lives in live PostgreSQL tables. View, edit, filter, or export CSVs directly inside the Supabase dashboard.
-                </p>
-                <a
-                  href={credentials.url ? `${credentials.url.replace(/\/$/, '')}/project/default/editor` : 'https://supabase.com/dashboard'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full h-8 px-3 rounded bg-[#202226] hover:bg-[#2a2d33] border border-white/10 text-zinc-200 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition-colors"
-                >
-                  <span>Open Supabase Table Editor</span>
-                  <ExternalLink className="w-3 h-3 text-zinc-400" />
-                </a>
-              </div>
-
-              <div className="p-3.5 bg-[#18191c] border border-white/[0.06] rounded-lg space-y-2">
-                <div className="flex items-center gap-2 text-white font-semibold text-xs">
-                  <Upload className="w-4 h-4 text-amber-400" />
-                  <span>3. Restore / Import Backup</span>
-                </div>
-                <p className="text-[11px] text-zinc-400 leading-relaxed">
-                  Upload a previously saved JSON backup to completely restore all clients, projects, invoices, and settings.
-                </p>
-                <div>
-                  <input
-                    type="file"
-                    ref={fileInputRef}
-                    accept=".json,application/json"
-                    onChange={handleImportBackup}
-                    className="hidden"
-                    id="import-backup-file"
-                  />
-                  <label
-                    htmlFor="import-backup-file"
-                    className="w-full h-8 px-3 rounded bg-[#202226] hover:bg-[#2a2d33] border border-white/10 text-zinc-200 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
-                  >
-                    <Upload className="w-3.5 h-3.5 text-amber-400" />
-                    <span>Upload & Restore Backup</span>
-                  </label>
-                </div>
               </div>
             </div>
 
-            {/* Direct LocalStorage Access Note */}
-            <div className="p-3 bg-[#16171a] border border-white/[0.06] rounded text-[11px] text-zinc-400 flex items-start gap-2">
-              <Terminal className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold text-zinc-200">Direct Browser Inspection: </span>
-                Press <kbd className="px-1.5 py-0.5 bg-zinc-800 border border-white/10 rounded text-[10px] text-zinc-300 font-mono">F12</kbd> (or right click &gt; Inspect) &gt; <span className="text-zinc-200">Application</span> &gt; <span className="text-zinc-200">Local Storage</span> &gt; key <code className="text-[#E52D27] font-mono">finex_db_state_v1</code>. All JSON state is stored there in real time.
+            {/* Live Collection Metrics */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+              <div className="bg-[#18191c] border border-white/[0.06] p-3 rounded-lg">
+                <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
+                  <span>Clients</span>
+                  <Users className="w-3.5 h-3.5 text-sky-400" />
+                </div>
+                <div className="text-lg font-bold text-white font-mono">{clientsCount}</div>
+                <div className="text-[10px] text-zinc-400">Active roster records</div>
+              </div>
+
+              <div className="bg-[#18191c] border border-white/[0.06] p-3 rounded-lg">
+                <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
+                  <span>Leads</span>
+                  <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                </div>
+                <div className="text-lg font-bold text-white font-mono">{leadsCount}</div>
+                <div className="text-[10px] text-zinc-400">Pipeline prospects</div>
+              </div>
+
+              <div className="bg-[#18191c] border border-white/[0.06] p-3 rounded-lg">
+                <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
+                  <span>Projects</span>
+                  <Briefcase className="w-3.5 h-3.5 text-indigo-400" />
+                </div>
+                <div className="text-lg font-bold text-white font-mono">{projectsCount}</div>
+                <div className="text-[10px] text-zinc-400">{tasksCount} allocated tasks</div>
+              </div>
+
+              <div className="bg-[#18191c] border border-white/[0.06] p-3 rounded-lg">
+                <div className="flex items-center justify-between text-zinc-400 text-xs mb-1">
+                  <span>Payments</span>
+                  <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                </div>
+                <div className="text-lg font-bold text-white font-mono">{paymentsCount}</div>
+                <div className="text-[10px] text-zinc-400">{expensesCount} logged expenses</div>
               </div>
             </div>
           </div>
 
-          {/* 2. HOW TO PUBLISH ON GITHUB */}
-          <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.06]">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded bg-zinc-800 border border-white/10 flex items-center justify-center text-white">
-                  <Github className="w-4 h-4" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white tracking-tight flex items-center gap-2">
-                    How to Publish FINEX WEB on GitHub
-                  </h3>
-                  <p className="text-[11px] text-zinc-400">
-                    Step-by-step commands to push this entire codebase to your GitHub account repository.
-                  </p>
-                </div>
+          {/* Backup & Restore Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Export Card */}
+            <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-3">
+              <div className="flex items-center gap-2">
+                <Download className="w-4 h-4 text-emerald-400" />
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  One-Click Full Database Export
+                </h4>
               </div>
-
-              <a
-                href="https://github.com/new"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded bg-[#E52D27] hover:bg-[#c92520] text-white text-xs font-semibold shadow transition-colors self-start sm:self-auto"
-              >
-                <span>Create New GitHub Repo</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
-
-            {/* Config inputs for quick command personalization */}
-            <div className="p-3 bg-[#18191c] border border-white/[0.06] rounded-lg space-y-3">
-              <div className="text-xs font-semibold text-zinc-300 flex items-center justify-between">
-                <span>Personalize Your GitHub Push Commands:</span>
+              <p className="text-xs text-zinc-400">
+                Downloads an encrypted JSON archive containing all your clients, projects, invoices, team records, WhatsApp templates, and settings. Store it on your Google Drive, USB drive, or local disk for safe keeping.
+              </p>
+              <div className="pt-2">
                 <button
                   type="button"
-                  onClick={() => {
-                    setGithubUser('YOUR_USERNAME');
-                    setGithubRepo('YOUR_REPO_NAME');
-                  }}
-                  className="text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                  onClick={handleExportBackup}
+                  className="w-full h-9 bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-white rounded text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
                 >
-                  Reset placeholders
+                  <FileJson className="w-4 h-4 text-emerald-400" />
+                  <span>Export Database to JSON File</span>
                 </button>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] text-zinc-400 mb-1">GitHub Username / Organization</label>
-                  <input
-                    type="text"
-                    value={githubUser}
-                    onChange={(e) => setGithubUser(e.target.value.trim())}
-                    placeholder="YOUR_USERNAME"
-                    className="w-full h-8 px-2.5 bg-[#121316] border border-white/10 rounded text-white font-mono text-xs focus:border-[#E52D27] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] text-zinc-400 mb-1">Repository Name</label>
-                  <input
-                    type="text"
-                    value={githubRepo}
-                    onChange={(e) => setGithubRepo(e.target.value.trim())}
-                    placeholder="YOUR_REPO_NAME"
-                    className="w-full h-8 px-2.5 bg-[#121316] border border-white/10 rounded text-white font-mono text-xs focus:border-[#E52D27] focus:outline-none"
-                  />
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-[11px] text-zinc-400 mb-1">
-                    {gitTab === 'initial' ? 'Initial Commit Message' : 'Change Update Message'}
-                  </label>
-                  <input
-                    type="text"
-                    value={gitTab === 'initial' ? commitMessage : changeMessage}
-                    onChange={(e) =>
-                      gitTab === 'initial'
-                        ? setCommitMessage(e.target.value)
-                        : setChangeMessage(e.target.value)
-                    }
-                    className="w-full h-8 px-2.5 bg-[#121316] border border-white/10 rounded text-white font-mono text-xs focus:border-[#E52D27] focus:outline-none"
-                  />
-                </div>
+            {/* Import / Restore Card */}
+            <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-3">
+              <div className="flex items-center gap-2">
+                <Upload className="w-4 h-4 text-sky-400" />
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  Restore / Migrate to Another Device
+                </h4>
               </div>
-            </div>
-
-            {/* Git Command Tabs */}
-            <div className="flex items-center gap-2 border-b border-white/[0.08] pb-1">
-              <button
-                type="button"
-                onClick={() => setGitTab('initial')}
-                className={`px-3 py-1.5 rounded-t text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                  gitTab === 'initial'
-                    ? 'bg-[#E52D27] text-white shadow'
-                    : 'text-zinc-400 hover:text-white bg-[#18191c]'
-                }`}
-              >
-                <GitBranch className="w-3.5 h-3.5" />
-                <span>1. Initial Repository Setup & Push</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setGitTab('push_changes')}
-                className={`px-3 py-1.5 rounded-t text-xs font-semibold flex items-center gap-1.5 transition-colors ${
-                  gitTab === 'push_changes'
-                    ? 'bg-[#E52D27] text-white shadow'
-                    : 'text-zinc-400 hover:text-white bg-[#18191c]'
-                }`}
-              >
-                <Upload className="w-3.5 h-3.5" />
-                <span>2. Push Future Changes / Updates</span>
-              </button>
-            </div>
-
-            {/* Terminal Commands Block */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-                  <Terminal className="w-3.5 h-3.5 text-[#E52D27]" />
-                  {gitTab === 'initial' ? 'Run Initial Push in Terminal:' : 'Run Push Changes in Terminal:'}
-                </span>
+              <p className="text-xs text-zinc-400">
+                Moving to a new laptop or another browser? Upload your exported JSON backup file here to instantly restore your entire agency database in under 1 second.
+              </p>
+              <div className="pt-2">
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImportBackup}
+                  accept=".json,application/json"
+                  className="hidden"
+                />
                 <button
                   type="button"
-                  onClick={() =>
-                    handleCopy(
-                      gitTab === 'initial' ? gitCommandsInitial : gitCommandsChanges,
-                      gitTab === 'initial' ? 'all-git' : 'changes-git'
-                    )
-                  }
-                  className="px-3 py-1 rounded bg-[#E52D27] hover:bg-[#c92520] text-white text-xs font-semibold flex items-center gap-1.5 shadow transition-colors"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-full h-9 bg-zinc-900 hover:bg-zinc-800 border border-white/10 text-white rounded text-xs font-semibold flex items-center justify-center gap-2 transition-colors"
                 >
-                  {copiedId === 'all-git' || copiedId === 'changes-git' ? (
-                    <Check className="w-3.5 h-3.5" />
-                  ) : (
-                    <Copy className="w-3.5 h-3.5" />
-                  )}
-                  <span>
-                    {copiedId === 'all-git' || copiedId === 'changes-git'
-                      ? 'Copied Commands!'
-                      : 'Copy Entire Code'}
-                  </span>
+                  <Upload className="w-4 h-4 text-sky-400" />
+                  <span>Choose Backup File (.json) to Restore</span>
                 </button>
               </div>
+            </div>
+          </div>
 
-              {gitTab === 'initial' ? (
-                <div className="p-4 bg-[#090a0c] border border-white/10 rounded-lg font-mono text-xs text-zinc-200 overflow-x-auto space-y-2 selection:bg-[#E52D27]/40 leading-relaxed">
-                  <div>
-                    <span className="text-zinc-500"># 1. Initialize git</span>
-                    <div className="text-emerald-400 font-semibold">git init</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500"># 2. Stage all project files (.gitignore protects secrets automatically)</span>
-                    <div className="text-emerald-400 font-semibold">git add .</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500"># 3. Create your first commit</span>
-                    <div className="text-emerald-400 font-semibold">git commit -m &quot;{commitMessage || 'feat: complete FINEX WEB agency operating system'}&quot;</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500"># 4. Set main as the default branch</span>
-                    <div className="text-emerald-400 font-semibold">git branch -M main</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500"># 5. Link to your GitHub repository (replace with your GitHub username and repo)</span>
-                    <div className="text-sky-300 font-semibold">git remote add origin https://github.com/{githubUser || 'YOUR_USERNAME'}/{githubRepo || 'YOUR_REPO_NAME'}.git</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500"># 6. Push to GitHub</span>
-                    <div className="text-amber-400 font-semibold">git push -u origin main</div>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 bg-[#090a0c] border border-white/10 rounded-lg font-mono text-xs text-zinc-200 overflow-x-auto space-y-2 selection:bg-[#E52D27]/40 leading-relaxed">
-                  <div>
-                    <span className="text-zinc-500"># 1. Check status of modified files</span>
-                    <div className="text-emerald-400 font-semibold">git status</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500"># 2. Stage all changes</span>
-                    <div className="text-emerald-400 font-semibold">git add .</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500"># 3. Commit your changes</span>
-                    <div className="text-emerald-400 font-semibold">git commit -m &quot;{changeMessage || 'update: push latest agency updates'}&quot;</div>
-                  </div>
-                  <div>
-                    <span className="text-zinc-500"># 4. Push updates to GitHub</span>
-                    <div className="text-amber-400 font-semibold">git push origin main</div>
-                  </div>
-                </div>
-              )}
+          {/* Why This Alternative Is Better */}
+          <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-4">
+            <div className="flex items-center gap-2 text-white font-bold text-xs uppercase tracking-wider">
+              <Zap className="w-4 h-4 text-amber-400" />
+              <span>Why This Local Engine Is Superior to Supabase Cloud</span>
             </div>
 
-            {/* Checklist & Safety Confirmation */}
-            <div className="p-3.5 bg-[#18191c] border border-white/[0.06] rounded-lg space-y-2 text-xs">
-              <div className="font-semibold text-white flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-400" />
-                <span>Publishing Safety & Best Practices Checklist:</span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+              <div className="p-3 bg-[#18191c] rounded-lg border border-white/[0.04]">
+                <div className="font-semibold text-emerald-400 mb-1">1. $0 Ongoing Cost</div>
+                <div className="text-zinc-400 leading-relaxed">
+                  No monthly cloud invoices, no project pause after inactivity, and no database tier limits.
+                </div>
               </div>
-              <ul className="space-y-1.5 text-zinc-400 text-[11px] list-disc list-inside">
-                <li><span className="text-zinc-200 font-medium">Secrets Safe:</span> <code className="text-[#E52D27] font-mono">.gitignore</code> already ignores <code className="font-mono">.env</code> and <code className="font-mono">node_modules/</code>. Your private keys will never be committed.</li>
-                <li><span className="text-zinc-200 font-medium">Public vs Private:</span> On GitHub, you can set the repository to <strong>Private</strong> if this is strictly for your agency team.</li>
-                <li><span className="text-zinc-200 font-medium">One-Click Deploy:</span> Once on GitHub, you can link it directly to <strong>Vercel</strong>, <strong>Netlify</strong>, or <strong>Cloudflare Pages</strong> for automated live hosting with zero config.</li>
-              </ul>
+
+              <div className="p-3 bg-[#18191c] rounded-lg border border-white/[0.04]">
+                <div className="font-semibold text-sky-400 mb-1">2. 0ms Query Latency</div>
+                <div className="text-zinc-400 leading-relaxed">
+                  Queries and updates are instant. No spinner delays, no network dropouts, and 100% offline functionality.
+                </div>
+              </div>
+
+              <div className="p-3 bg-[#18191c] rounded-lg border border-white/[0.04]">
+                <div className="font-semibold text-amber-400 mb-1">3. Total Privacy</div>
+                <div className="text-zinc-400 leading-relaxed">
+                  Client contact info, contracts, and financial revenues never leave your device without your explicit export.
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Reset To Factory Seed Data */}
+          <div className="bg-rose-950/20 border border-rose-900/40 p-4 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <div className="text-xs font-bold text-rose-300">Reset to Factory Demo Data</div>
+              <div className="text-[11px] text-zinc-400">
+                Purge all custom records and reload default sample agency clients, projects, and leads.
+              </div>
+            </div>
+
+            {!showResetConfirm ? (
+              <button
+                type="button"
+                onClick={() => setShowResetConfirm(true)}
+                className="px-3 py-1.5 bg-rose-900/40 hover:bg-rose-900/70 border border-rose-700/60 text-rose-200 rounded text-xs transition-colors shrink-0"
+              >
+                Reset Demo Data
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setShowResetConfirm(false)}
+                  className="px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmResetData}
+                  className="px-3.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow transition-colors"
+                >
+                  Confirm Reset
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      {/* View 1: Supabase Manager */}
-      {activeSection === 'supabase' && <SupabaseManager />}
+      {/* ======================================================== */}
+      {/* SECTION 2: EASY LIVE HOSTING ALTERNATIVES                */}
+      {/* (Superior Alternative to GitHub Pages)                   */}
+      {/* ======================================================== */}
+      {activeSection === 'deployment' && (
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-2">
+            <div className="flex items-center gap-2">
+              <Rocket className="w-5 h-5 text-[#E52D27]" />
+              <h3 className="text-sm font-bold text-white">
+                Live Deployment Alternatives (No GitHub Required)
+              </h3>
+            </div>
+            <p className="text-xs text-zinc-400">
+              Skip GitHub repositories, GitHub Actions permissions, and token errors completely. Choose any of these 100% free, zero-config hosting options to put FINEX WEB live on the internet with a custom link:
+            </p>
+          </div>
 
-      {/* View 2: Agency & Bank Details */}
+          {/* Option 1: Netlify Drop (Recommended) */}
+          <div className="bg-[#121316] border-2 border-emerald-500/40 p-5 rounded-lg space-y-4 relative overflow-hidden">
+            <div className="absolute top-0 right-0 bg-emerald-500 text-black text-[10px] font-bold px-3 py-0.5 rounded-bl uppercase tracking-wider">
+              Fastest & Recommended
+            </div>
+
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Globe className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold text-white">
+                  Option 1: Netlify Drop (Drag &amp; Drop — 10 Seconds Live)
+                </h4>
+                <p className="text-xs text-zinc-400">
+                  Zero Git commands, zero repository setup, free SSL domain, and instant SPA routing.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-[#18191c] p-4 rounded-lg border border-white/[0.06] space-y-3 text-xs">
+              <div className="font-semibold text-white">Follow these 3 simple steps:</div>
+              <ol className="list-decimal pl-4 space-y-2 text-zinc-300">
+                <li>
+                  Build your production folder by running this in your terminal:
+                  <div className="mt-1 p-2 bg-black/60 rounded border border-white/10 font-mono text-[11px] text-emerald-400 flex items-center justify-between">
+                    <span>npm run build</span>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy('npm run build', 'build_cmd')}
+                      className="text-zinc-400 hover:text-white"
+                    >
+                      {copiedId === 'build_cmd' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                    </button>
+                  </div>
+                  <span className="text-[11px] text-zinc-400">This creates an optimized, standalone <code className="text-zinc-300">dist/</code> folder in your project.</span>
+                </li>
+                <li>
+                  Open{' '}
+                  <a
+                    href="https://app.netlify.com/drop"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-emerald-400 underline inline-flex items-center gap-1 font-semibold"
+                  >
+                    app.netlify.com/drop <ExternalLink className="w-3 h-3" />
+                  </a>{' '}
+                  in your web browser (create a free account if you haven&apos;t).
+                </li>
+                <li>
+                  <strong className="text-white">Drag and drop your `dist` folder</strong> directly onto the Netlify webpage.
+                </li>
+              </ol>
+              <div className="pt-2 border-t border-white/[0.08] text-[11px] text-emerald-300 flex items-center gap-1.5">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>That&apos;s it! Your site will be published at <code className="font-mono text-white">https://your-agency.netlify.app</code> with free automatic HTTPS.</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Option 2: Vercel CLI (1-Command Deploy) */}
+          <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-3">
+            <div className="flex items-center gap-2">
+              <Zap className="w-4 h-4 text-sky-400" />
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                Option 2: Vercel Instant CLI (1 Command, No GitHub Needed)
+              </h4>
+            </div>
+            <p className="text-xs text-zinc-400">
+              Deploy directly to Vercel&apos;s global edge network right from your computer terminal without creating a GitHub repository:
+            </p>
+
+            <div className="bg-[#18191c] p-3 rounded-lg border border-white/[0.06] font-mono text-[11px] text-sky-300 space-y-2">
+              <div className="text-zinc-500"># 1. Install Vercel CLI globally (one time)</div>
+              <div>npm i -g vercel</div>
+              <div className="text-zinc-500"># 2. Build and deploy to production</div>
+              <div>npm run build</div>
+              <div>vercel deploy --prod ./dist</div>
+            </div>
+          </div>
+
+          {/* Option 3: Local Server or Private VPS */}
+          <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-3">
+            <div className="flex items-center gap-2">
+              <HardDrive className="w-4 h-4 text-amber-400" />
+              <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                Option 3: Run on Your Own Office Machine or Private VPS
+              </h4>
+            </div>
+            <p className="text-xs text-zinc-400">
+              Want 100% self-hosted privacy? Run FINEX WEB on your own office computer or VPS using any standard static file server:
+            </p>
+
+            <div className="bg-[#18191c] p-3 rounded-lg border border-white/[0.06] font-mono text-[11px] text-amber-300 space-y-2">
+              <div className="text-zinc-500"># Run a zero-config production server on port 3000:</div>
+              <div>npm run build</div>
+              <div>npx serve -s dist -l 3000</div>
+            </div>
+            <p className="text-[11px] text-zinc-400">
+              Accessible to all computers on your office Wi-Fi network or mapped to your domain with Nginx.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* SECTION 3: AGENCY & BANK DETAILS                         */}
+      {/* ======================================================== */}
       {activeSection === 'general' && (
         <form onSubmit={handleSaveAll} className="space-y-6 text-xs">
           {saveSuccess && (
@@ -667,7 +606,7 @@ git push origin main`;
           <div className="bg-[#121316] border border-white/[0.08] p-5 rounded-lg space-y-4">
             <div className="flex items-center gap-2 pb-2 border-b border-white/[0.06]">
               <Building2 className="w-4 h-4 text-[#E52D27]" />
-              <h3 className="text-sm font-bold text-white">Agency Identity & Contact</h3>
+              <h3 className="text-sm font-bold text-white">Agency Identity &amp; Contact</h3>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -711,7 +650,7 @@ git push origin main`;
                 />
               </div>
               <div>
-                <label className="block text-zinc-300 mb-1">Currency Code & Symbol</label>
+                <label className="block text-zinc-300 mb-1">Currency Code &amp; Symbol</label>
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -849,35 +788,8 @@ git push origin main`;
             </div>
           </div>
 
-          {/* Submit & Reset */}
-          <div className="flex items-center justify-between pt-2">
-            {!showResetConfirm ? (
-              <button
-                type="button"
-                onClick={() => setShowResetConfirm(true)}
-                className="px-3 py-1.5 bg-rose-950/40 border border-rose-800/40 text-rose-400 hover:bg-rose-900/40 rounded text-xs transition-colors"
-              >
-                Reset to Factory Seed Data
-              </button>
-            ) : (
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setShowResetConfirm(false)}
-                  className="px-3 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  onClick={handleConfirmResetData}
-                  className="px-3.5 py-1 rounded bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs shadow transition-colors"
-                >
-                  Confirm Reset Demo Data
-                </button>
-              </div>
-            )}
-
+          {/* Submit */}
+          <div className="flex items-center justify-end pt-2">
             <button
               type="submit"
               className="px-5 py-2 rounded bg-[#E52D27] hover:bg-[#c92520] text-white font-semibold flex items-center gap-1.5 shadow-md transition-colors"
@@ -891,4 +803,3 @@ git push origin main`;
     </div>
   );
 };
-

@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../lib/auth';
-import { getSupabaseCredentials } from '../../lib/supabase';
+import { isSupabaseConfigured } from '../../lib/supabase';
 import {
   Search,
   Bell,
   Database,
   LogOut,
   Shield,
-  CheckCircle2,
-  AlertTriangle,
   Menu,
-  Github,
 } from 'lucide-react';
 import { db } from '../../lib/db';
 
@@ -19,7 +16,6 @@ interface HeaderProps {
   onOpenSearch: () => void;
   onOpenNotifications: () => void;
   onNavigateToSettings?: () => void;
-  onOpenGitHub?: () => void;
   activeView: string;
 }
 
@@ -28,11 +24,9 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenSearch,
   onOpenNotifications,
   onNavigateToSettings,
-  onOpenGitHub,
   activeView,
 }) => {
   const { user, logout } = useAuth();
-  const { isConfigured } = getSupabaseCredentials();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
   const notifications = db.getNotifications();
@@ -119,32 +113,25 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           onClick={onNavigateToSettings}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded text-xs border transition-colors ${
-            isConfigured
-              ? 'bg-emerald-950/40 hover:bg-emerald-900/50 border-emerald-800/40 text-emerald-400'
-              : 'bg-zinc-900 hover:bg-zinc-800 border-zinc-800 text-zinc-400'
+            isSupabaseConfigured()
+              ? 'border-emerald-800/60 bg-emerald-950/40 text-emerald-300 hover:bg-emerald-900/50'
+              : 'border-amber-800/60 bg-amber-950/30 text-amber-300 hover:bg-amber-900/40'
           }`}
-          title={isConfigured ? 'Supabase Live Connection Active (Click to manage database)' : 'Operating in Secure Local DB Mode (Click to configure Supabase)'}
+          title={
+            isSupabaseConfigured()
+              ? 'Connected to Supabase PostgreSQL (Click to view live tables)'
+              : 'Click to Connect your Supabase Cloud Database'
+          }
         >
-          <Database className="w-3 h-3" />
-          <span className="hidden sm:inline font-mono text-[11px]">
-            {isConfigured ? 'SUPABASE' : 'LOCAL DB'}
+          <Database className={`w-3 h-3 ${isSupabaseConfigured() ? 'text-emerald-400' : 'text-amber-400'}`} />
+          <span className="hidden sm:inline font-mono text-[11px] font-semibold">
+            {isSupabaseConfigured() ? 'SUPABASE LIVE' : 'CONNECT SUPABASE'}
           </span>
           <span
             className={`w-1.5 h-1.5 rounded-full ${
-              isConfigured ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-400'
+              isSupabaseConfigured() ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
             }`}
           />
-        </button>
-
-        {/* GitHub Publish / Push Changes Button */}
-        <button
-          type="button"
-          onClick={onOpenGitHub}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded text-xs border border-white/10 bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white transition-colors"
-          title="Push Code & Changes to GitHub"
-        >
-          <Github className="w-3.5 h-3.5" />
-          <span className="hidden sm:inline font-mono text-[11px]">PUSH GITHUB</span>
         </button>
 
         {/* Notification Bell */}
