@@ -1,0 +1,6 @@
+{
+  "name": "FINEX WEB - Private Agency Operating System",
+  "description": "Private admin-only agency operating system and CRM for FINEX WEB website development agency. Manages clients, leads, projects, payments, maintenance, team, tasks, salaries, and expenses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
