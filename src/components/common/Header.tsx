@@ -56,20 +56,20 @@ export const Header: React.FC<HeaderProps> = ({
   const title = viewTitles[activeView] || 'FINEX WEB OS';
 
   return (
-    <header className="h-14 bg-[#111214] border-b border-white/[0.08] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="h-16 bg-[#14181F]/95 backdrop-blur-md border-b border-white/[0.08] px-4 sm:px-6 flex items-center justify-between sticky top-0 z-30">
       {/* Zone 1: Breadcrumb & Title */}
       <div className="flex items-center gap-3 min-w-0">
         <button
           type="button"
           onClick={onToggleSidebar}
-          className="lg:hidden text-zinc-400 hover:text-white p-1 rounded hover:bg-white/5 transition-colors"
+          className="lg:hidden text-[#8C9398] hover:text-white p-1 rounded hover:bg-white/5 transition-colors"
           aria-label="Toggle navigation"
         >
           <Menu className="w-5 h-5" />
         </button>
 
         <div className="flex items-center gap-2 truncate">
-          <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider hidden sm:inline">
+          <span className="text-xs font-mono text-[#8C9398] uppercase tracking-wider hidden sm:inline">
             FINEX ADMIN
           </span>
           <span className="text-zinc-600 hidden sm:inline">/</span>
@@ -84,10 +84,10 @@ export const Header: React.FC<HeaderProps> = ({
         <button
           type="button"
           onClick={onOpenSearch}
-          className="w-full flex items-center justify-between px-3 py-1.5 bg-[#18191c] border border-white/[0.08] hover:border-white/20 rounded-md text-zinc-400 hover:text-zinc-200 transition-all text-xs"
+          className="w-full flex items-center justify-between px-3 py-1.5 bg-[#181E24] border border-white/[0.08] hover:border-white/20 rounded-md text-[#8C9398] hover:text-white transition-all text-xs"
         >
           <div className="flex items-center gap-2">
-            <Search className="w-3.5 h-3.5 text-zinc-400" />
+            <Search className="w-3.5 h-3.5 text-[#8C9398]" />
             <span>Search clients, leads, projects, team, domains...</span>
           </div>
           <kbd className="hidden lg:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-zinc-800 text-zinc-400 rounded border border-zinc-700">

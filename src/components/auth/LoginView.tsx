@@ -29,27 +29,27 @@ export const LoginView: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#090a0b] flex flex-col justify-center items-center px-4 sm:px-6 relative overflow-hidden">
+    <div className="min-h-screen bg-[#12161A] flex flex-col justify-center items-center px-4 sm:px-6 relative overflow-hidden">
       {/* Subtle background radial glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#E52D27]/5 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-[#E52D27]/10 blur-[130px] rounded-full pointer-events-none" />
 
       <div className="w-full max-w-md relative z-10">
         {/* Private security badge */}
         <div className="flex justify-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-900 border border-white/10 rounded text-[11px] font-mono text-zinc-400">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#181E24] border border-white/10 rounded text-[11px] font-mono text-[#8C9398]">
             <Shield className="w-3.5 h-3.5 text-[#E52D27]" />
             <span>RESTRICTED INTERNAL OPERATING SYSTEM</span>
           </div>
         </div>
 
         {/* Card */}
-        <div className="bg-[#121316] border border-white/10 rounded-lg p-7 shadow-2xl">
+        <div className="bg-[#181E24] border border-white/10 rounded-xl p-8 shadow-2xl">
           <div className="flex flex-col items-center text-center mb-6">
-            <Logo size="lg" showTagline={false} />
-            <h2 className="mt-4 text-lg font-bold text-white tracking-tight">
+            <Logo size="xl" variant="stacked" showTagline={false} />
+            <h2 className="mt-4 text-base font-bold text-white tracking-tight">
               Private Admin Authentication
             </h2>
-            <p className="mt-1 text-xs text-zinc-400 max-w-xs">
+            <p className="mt-1 text-xs text-[#8C9398] max-w-xs">
               Enter your authorized credentials to access clients, projects, finances, and team operations.
             </p>
           </div>

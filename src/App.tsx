@@ -83,7 +83,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0c0d0e] text-[#EDEDED] flex font-['Plus_Jakarta_Sans',sans-serif]">
+    <div className="min-h-screen bg-[#12161A] text-[#FFFFFF] flex font-['Poppins',sans-serif]">
       {/* Fixed Desktop Sidebar & Mobile Off-canvas */}
       <Sidebar
         activeView={currentView}

@@ -72,13 +72,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 w-64 bg-[#0e0f11] border-r border-white/[0.08] z-50 flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 w-64 bg-[#14181F] border-r border-white/[0.08] z-50 flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         {/* Brand header */}
-        <div className="h-14 px-5 flex items-center justify-between border-b border-white/[0.08]">
-          <Logo size="sm" showTagline={true} />
+        <div className="h-16 px-4 flex items-center justify-between border-b border-white/[0.08] bg-[#12161A]/60">
+          <Logo size="md" variant="primary" showTagline={false} />
           <button
             type="button"
             onClick={onClose}
